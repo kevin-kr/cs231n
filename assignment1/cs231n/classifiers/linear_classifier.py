@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from builtins import range
+from builtins import object
 import numpy as np
 from cs231n.classifiers.linear_svm import *
 from cs231n.classifiers.softmax import *
@@ -38,45 +40,43 @@ class LinearClassifier(object):
 
         # Run stochastic gradient descent to optimize W
         loss_history = []
-        for it in xrange(num_iters):
+        for it in range(num_iters):
             X_batch = None
             y_batch = None
 
-        #########################################################################
-        # TODO:                                                                 #
-        # Sample batch_size elements from the training data and their           #
-        # corresponding labels to use in this round of gradient descent.        #
-        # Store the data in X_batch and their corresponding labels in           #
-        # y_batch; after sampling X_batch should have shape (dim, batch_size)   #
-        # and y_batch should have shape (batch_size,)                           #
-        #                                                                       #
-        # Hint: Use np.random.choice to generate indices. Sampling with         #
-        # replacement is faster than sampling without replacement.              #
-        #########################################################################
-        
+            #########################################################################
+            # TODO:                                                                 #
+            # Sample batch_size elements from the training data and their           #
+            # corresponding labels to use in this round of gradient descent.        #
+            # Store the data in X_batch and their corresponding labels in           #
+            # y_batch; after sampling X_batch should have shape (batch_size, dim)   #
+            # and y_batch should have shape (batch_size,)                           #
+            #                                                                       #
+            # Hint: Use np.random.choice to generate indices. Sampling with         #
+            # replacement is faster than sampling without replacement.              #
+            #########################################################################
+            # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
             random_idxs = np.random.choice(num_train, batch_size)
             X_batch = X[random_idxs]
             y_batch = y[random_idxs]
-            
-        #########################################################################
-        #                       END OF YOUR CODE                                #
-        #########################################################################
+
+            # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
             # evaluate loss and gradient
             loss, grad = self.loss(X_batch, y_batch, reg)
             loss_history.append(loss)
 
-        # perform parameter update
-        #########################################################################
-        # TODO:                                                                 #
-        # Update the weights using the gradient and the learning rate.          #
-        #########################################################################
-        
+            # perform parameter update
+            #########################################################################
+            # TODO:                                                                 #
+            # Update the weights using the gradient and the learning rate.          #
+            #########################################################################
+            # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
             self.W -= learning_rate * grad
-            
-        #########################################################################
-        #                       END OF YOUR CODE                                #
-        #########################################################################
+
+            # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
             if verbose and it % 100 == 0:
                 print('iteration %d / %d: loss %f' % (it, num_iters, loss))
@@ -90,29 +90,28 @@ class LinearClassifier(object):
 
         Inputs:
         - X: A numpy array of shape (N, D) containing training data; there are N
-        training samples each of dimension D.
+          training samples each of dimension D.
 
         Returns:
         - y_pred: Predicted labels for the data in X. y_pred is a 1-dimensional
-        array of length N, and each element is an integer giving the predicted
-        class.
+          array of length N, and each element is an integer giving the predicted
+          class.
         """
         y_pred = np.zeros(X.shape[0])
         ###########################################################################
         # TODO:                                                                   #
         # Implement this method. Store the predicted labels in y_pred.            #
         ###########################################################################
-    
+        # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
         y_pred = np.argmax(X @ self.W, axis=1)
-    
-        ###########################################################################
-        #                           END OF YOUR CODE                              #
-        ###########################################################################
+
+        # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return y_pred
-  
+
     def loss(self, X_batch, y_batch, reg):
         """
-        Compute the loss function and its derivative. 
+        Compute the loss function and its derivative.
         Subclasses will override this.
 
         Inputs:
@@ -140,4 +139,3 @@ class Softmax(LinearClassifier):
 
     def loss(self, X_batch, y_batch, reg):
         return softmax_loss_vectorized(self.W, X_batch, y_batch, reg)
-
