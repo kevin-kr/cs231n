@@ -67,7 +67,11 @@ def sgd_momentum(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    momentum = config['momentum']
+    learning_rate = config['learning_rate']
+    
+    v = momentum * v - learning_rate * dw
+    next_w = w + v
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -105,7 +109,14 @@ def rmsprop(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    learning_rate = config['learning_rate']
+    decay_rate = config['decay_rate']
+    epsilon = config['epsilon']
+    cache = config['']
+    
+    # RSMProp
+    cache = decay_rate * cache + (1 - decay_rate) * dw * dw
+    next_w = w - learning_rate * dw / (np.sqrt(cache) + epsilon)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -149,8 +160,32 @@ def adam(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
-
+    learning_rate = config['learning_rate']
+    beta1 = config['beta1']
+    beta2 = config['beta2']
+    epsilon = config['epsilon']
+    m = config['m']
+    v = config['v']
+    t = config['t']
+    
+    # A Method for Stochastic Optimization
+    t += 1
+    
+    # momentum
+    m = beta1 * m + (1 - beta1) * dw
+    # rmsprop
+    v = beta2 * v + (1 - beta2) * dw * dw
+    
+    # bias correction
+    m_unbias = m / (1 - beta1**t)
+    v_unbias = v / (1 - beta2**t)
+    
+    next_w = w - learning_rate * m_unbias / (np.sqrt(v_unbias) + epsilon)
+    
+    config['m'] = m
+    config['v'] = v
+    config['t'] = t
+    
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
