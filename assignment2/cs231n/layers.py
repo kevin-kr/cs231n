@@ -511,7 +511,7 @@ def dropout_backward(dout, cache):
         #######################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         
-        pass
+        dx = dout * mask
         
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         #######################################################################
@@ -573,19 +573,19 @@ def conv_forward_naive(x, w, b, conv_param):
     
     # filter
     for f in range(F):
-        w_filter = w[f, :, :, :]
+        w_filter = w[f,:,:,:]
         
-        for h in range(H_out):
-            h_begin = stride * h
+        for i in range(H_out):
+            h_begin = stride * i
             h_end = h_begin + HH
             
-            for w in range(W_out):
-                w_begin = stride * w
+            for j in range(W_out):
+                w_begin = stride * j
                 w_end = w_begin + WW
                 
                 x_slice = x_padded[:, :, h_begin:h_end, w_begin:w_end]
                 
-                out[:, f, h, w] = np.sum(x_slice * w_filter, axis=(1,2,3)) + b[f]
+                out[:, f, i, j] = np.sum(x_slice * w_filter, axis=(1,2,3)) + b[f]
     
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -627,26 +627,26 @@ def conv_backward_naive(dout, cache):
     
     _, _, H_out, W_out = dout.shape
     
-    dx = np.zeros(X_padded.shape)
+    dx = np.zeros(x_padded.shape)
     dw = np.zeros(w.shape)
     db = np.zeros(b.shape)
     
     for f in range(F):
         w_filter = np.expand_dims(w[f, :, :, :], axis=0)
         
-        for h in range(H_out):
-            h_begin = stride * h
+        for i in range(H_out):
+            h_begin = stride * i
             h_end = h_begin + HH
             
-            for w in range(W_out):
-                w_begin = stride * w
+            for j in range(W_out):
+                w_begin = stride * j
                 w_end = w_begin + WW
                 
-                x_slice = x_padded[:, :, h_begin:h_end, w_begin, w_end]
+                x_slice = x_padded[:, :, h_begin:h_end, w_begin:w_end]
         
-                dout_current = np.reshape(dout[:, f, h, w], (-1, 1, 1, 1))
+                dout_current = np.reshape(dout[:, f, i, j], (-1, 1, 1, 1))
             
-                dx[:, :, h_begin:h_end, w_begin, w_end] += dout_current * w_filter
+                dx[:, :, h_begin:h_end, w_begin:w_end] += dout_current * w_filter
                 dw[f, :, :, :] += np.sum(dout_current * x_slice, axis=0)
                 db[f] += np.sum(dout_current)
     
@@ -684,8 +684,31 @@ def max_pool_forward_naive(x, pool_param):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
-
+    N, C, H, W = x.shape
+    
+    pool_height = pool_param['pool_height']
+    pool_width = pool_param['pool_width']
+    stride = pool_param['stride']
+    
+    H_out = (H - pool_height) // stride + 1
+    W_out = (W - pool_width) // stride + 1
+    
+    out = np.zeros((N, C, H_out, W_out))
+    
+    for c in range(C):
+        
+        for i in range(H_out):
+            h_begin = stride * i
+            h_end = h_begin + pool_height
+            
+            for j in range(W_out):
+                w_begin = stride * j
+                w_end = w_begin + pool_width
+                
+                x_slice = x[:, c, h_begin:h_end, w_begin:w_end]
+                
+                out[:, c, i, j] = np.max(np.reshape(x_slice, (N, -1)), axis=1)
+    
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -711,7 +734,36 @@ def max_pool_backward_naive(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    x, pool_param = cache
+    
+    N, C, H, W = x.shape
+    
+    pool_height = pool_param['pool_height']
+    pool_width = pool_param['pool_width']
+    stride = pool_param['stride']
+    
+    _, _, H_out, W_out = dout.shape
+    
+    dx = np.zeros(x.shape)
+    
+    for c in range(C):
+        
+        for i in range(H_out):
+            h_begin = stride * i
+            h_end = h_begin + pool_height
+            
+            for j in range(W_out):
+                w_begin = stride * j
+                w_end = w_begin + pool_width
+                
+                x_slice = x[:, c, h_begin:h_end, w_begin:w_end]
+                
+                dout_current = np.reshape(dout[:, c, i, j], (-1, 1, 1))
+                
+                out_current = np.reshape(np.max(np.reshape(x_slice, (N, -1)), axis=1), (-1, 1, 1))
+                
+                dx[:, c, h_begin:h_end, w_begin:w_end] += np.where(x_slice == out_current, dout_current, 0)
+                
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
